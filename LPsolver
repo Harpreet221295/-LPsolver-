@@ -62,6 +62,115 @@ class LPsolver():
 
         x.append(sum([x[i]*a[i] for i in range(lenght_a)]))
         return x
+        
+        
+    def plot_LP(self,a,b,c):
+        a=asarray(a)
+        b=asarray(b)
+        c=asarray(c)
+        x_points=[0]
+        y_points=[0]
+        x=arange(0,100,0.5)
+        y=-(a[0]/a[1])*x
+        fig,ax=plt.subplots()
+        ax.axis([0,15,-15,25])
+        if c[0][1]!=0:
+            c1=(float(b[0])/c[0][1])-(float(c[0][0])/c[0][1])*x
+            ax.plot(x,c1,color='r',label="First constraint")
+        else:
+            v=float(b[0])/c[0][0]
+            ax.plot((v,v),(0,100),'r',label="First constraint")
+        if c[1][1]!=0:
+            c2=(float(b[1])/c[1][1])-(c[1][0]/c[1][1])*x
+            ax.plot(x,c2,color='b',label="second constraint")
+        else:
+            v=float(b[1])/c[1][0]
+            ax.plot((v,v),(0,100),'b',label="second constraint")
+        if c[2][1]!=0:
+            c3=(float(b[2])/c[2][1])-(c[2][0]/c[2][1])*x
+            ax.plot(x,c3,color='g',label="third constraint")
+        else:
+            v=float(b[2])/c[2][0]
+            ax.plot((v,v),(0,100),'g',label="third constraint")
+        ax.plot(x,y,'b^-',label="Objective function")
+        ax.plot((0,15),(0,0))
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.legend(loc=1)
+        if c[0][1]!=0:
+            if c[0][0]!=0:
+                m=(float(b[0])/c[0][1])/(float(c[0][0])/c[0][1])
+                n=(float(b[0])/c[0][1])
+                x_points.append(m)
+                y_points.append(0)
+                x_points.append(0)
+                y_points.append(n)
+            else:
+                x_points.append(0)
+                y_points.append((float(b[0])/c[0][1]))
+        else:
+            x_points.append(float(b[0])/c[0][0])
+            y_points.append(0)
+        if c[1][1]!=0:
+            if c[1][0]!=0:
+                m=(float(b[1])/c[1][1])/(float(c[1][0])/c[1][1])
+                n=(float(b[1])/c[1][1])
+                x_points.append(m)
+                y_points.append(0)
+                x_points.append(0)
+                y_points.append(n)
+            else:
+                x_points.append(0)
+                y_points.append((float(b[1])/c[1][1]))
+        else:
+            x_points.append(float(b[1])/c[1][0])
+            y_points.append(0)
+        if c[2][1]!=0:
+            if c[2][0]!=0:
+                m=(float(b[2])/c[2][1])/(float(c[2][0])/c[2][1])
+                n=(float(b[2])/c[2][1])
+                x_points.append(m)
+                y_points.append(0)
+                x_points.append(0)
+                y_points.append(n)
+            else:
+                x_points.append(0)
+                y_points.append((float(b[2])/c[2][1]))
+        else:
+            x_points.append(float(b[0])/c[0][0])
+            y_points.append(0)
+        if abs((float(c[0][0]))*c[1][1]-c[0][1]*c[1][0])>10^-6:
+            m=((float(c[0][1]))*b[1]-(c[1][1])*(b[0]))/((float(c[0][0]))*c[1][1]-c[0][1]*c[1][0])
+            n=((float(c[0][0]))*b[1]-(c[1][0])*(b[0]))/((float(c[0][0]))*c[1][1]-c[0][1]*c[1][0])
+            x_points.append(-1*m)
+            y_points.append(n)
+        if abs((float(c[1][0]))*c[2][1]-c[1][1]*c[2][0])>10^-6:
+            m=((float(c[1][1]))*b[2]-(c[2][1])*(b[1]))/((float(c[1][0]))*c[2][1]-c[1][1]*c[2][0])
+            n=((float(c[1][0]))*b[2]-(c[2][0])*(b[1]))/((float(c[1][0]))*c[2][1]-c[1][1]*c[2][0])
+            x_points.append(-1*m)
+            y_points.append(n)
+        if abs((float(c[0][0]))*c[2][1]-c[2][0]*c[0][1])>10^-6:
+            m=((float(c[0][1]))*b[2]-(c[2][1])*(b[0]))/((float(c[0][0]))*c[2][1]-c[2][0]*c[0][1])
+            n=((float(c[0][0]))*b[2]-(c[2][0])*(b[0]))/((float(c[0][0]))*c[2][1]-c[2][0]*c[0][1])
+            x_points.append(-1*m)
+            y_points.append(n)
+        print(x_points)
+        print(y_points)
+        z=[]
+        x_optimum=[]
+        y_optimum=[]
+        for g,j in zip(x_points,y_points):
+            if g*c[0][0]+j*c[0][1]<=b[0] and g*c[1][0]+j*c[1][1]<=b[1] and g*c[2][0]+j*c[2][1]<=b[2] and g>=0 and j>=0:
+                h=g*a[0]+j*a[1]
+                z.append(h)
+                x_optimum.append(g)
+                y_optimum.append(j)
+        for i,j in zip(x_optimum,y_optimum):
+            ax.plot(i,j,'bo')
+        r=z.index(max(z))
+        L=[max(z),x_optimum[r],y_optimum[r]]
+        ax.annotate('optimal solution',xy=(L[1],L[2]),xytext=(3,1.5), arrowprops=dict(facecolor='black', shrink=0.05))
+        return L
 
 
 lps=LPsolver()
